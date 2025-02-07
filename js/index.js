@@ -1,6 +1,7 @@
 const urlParams = new URLSearchParams(window.location.search);
 const startDateParam = urlParams.get('start');
 const endDateParam = urlParams.get('end');
+const halfDayParam = urlParams.get('halfDay') === 'true';
 
 if (!startDateParam || !endDateParam) {
     window.location.href = 'select-dates.html';
@@ -56,11 +57,23 @@ for (let day = 1; day <= 31; day++) {
         if (day <= daysInMonth[currentMonth]) {
             const dayOfWeek = dayNames[date.getDay()];
             cell.textContent = `${dayOfWeek} ${day}`;
+            if (halfDayParam) {
+                cell.classList.add('half-day'); // Ajoutez une classe pour les demi-journées
+                const leftHalf = document.createElement('div');
+                leftHalf.classList.add('left-half');
+                cell.appendChild(leftHalf);
+
+                const rightHalf = document.createElement('div');
+                rightHalf.classList.add('right-half');
+                cell.appendChild(rightHalf);
+            }
             if (date >= startDate && date <= endDate) {
                 cell.classList.add('valid-day'); // Ajoutez une classe pour les jours valides
             } else {
                 cell.classList.add('invalid-day'); // Ajoutez une classe pour les jours invalides
             }
+        } else {
+            cell.classList.add('empty-day'); // Ajoutez une classe pour les cases vides
         }
         row.appendChild(cell);
 
@@ -80,7 +93,14 @@ let currentColor = '';
 calendarBody.addEventListener('mousedown', (event) => {
     if (enterpriseModeCheckbox.checked || universityModeCheckbox.checked) {
         isColoring = true;
-        if (event.target.tagName === 'TD' && event.target.classList.contains('valid-day')) {
+        if (event.target.classList.contains('left-half') || event.target.classList.contains('right-half')) {
+            if (enterpriseModeCheckbox.checked) {
+                currentColor = event.target.style.backgroundColor === 'lightblue' ? '' : 'lightblue';
+            } else if (universityModeCheckbox.checked) {
+                currentColor = event.target.style.backgroundColor === 'orange' ? '' : 'orange';
+            }
+            event.target.style.backgroundColor = currentColor;
+        } else if (event.target.tagName === 'TD' && event.target.classList.contains('valid-day')) {
             if (enterpriseModeCheckbox.checked) {
                 currentColor = event.target.style.backgroundColor === 'lightblue' ? '' : 'lightblue';
             } else if (universityModeCheckbox.checked) {
@@ -93,7 +113,9 @@ calendarBody.addEventListener('mousedown', (event) => {
 
 calendarBody.addEventListener('mousemove', (event) => {
     if (isColoring && (enterpriseModeCheckbox.checked || universityModeCheckbox.checked)) {
-        if (event.target.tagName === 'TD' && event.target.classList.contains('valid-day')) {
+        if (event.target.classList.contains('left-half') || event.target.classList.contains('right-half')) {
+            event.target.style.backgroundColor = currentColor;
+        } else if (event.target.tagName === 'TD' && event.target.classList.contains('valid-day')) {
             event.target.style.backgroundColor = currentColor;
         }
     }

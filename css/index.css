@@ -34,14 +34,49 @@ th {
 
 td {
     background-color: #fff;
+    position: relative;
+}
+
+td.half-day::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 1px;
+    height: 100%;
+    background-color: #000;
+    opacity: 0.3;
+}
+
+td.half-day .left-half,
+td.half-day .right-half {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+}
+
+td.half-day .left-half {
+    left: 0;
+    border-right: 1px solid #ccc;
+}
+
+td.half-day .right-half {
+    right: 0;
+}
+
+td.half-day .left-half:hover,
+td.half-day .right-half:hover {
+    background-color: #f1f1f1;
+    z-index: -2;
 }
 
 td:hover {
     background-color: #f1f1f1;
 }
 
-.invalid-day {
-    background-color: #e0e0e0; /* Couleur grisée pour les jours invalides */
+.invalid-day, .empty-day {
+    background-color: #e0e0e0; /* Couleur grisée pour les jours invalides et les cases vides */
     pointer-events: none; /* Empêcher la sélection */
 }
 
