@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+body {
+    font-family: Montserrat, sans-serif;
+    margin: 0;
+    padding: 10px;
+    background-color: #f4f4f4;
+}
+
+.table-container {
+    max-height: 100vh; /* Assurez-vous qu'il s'adapte à la hauteur de la fenêtre */
+    overflow-y: hidden; /* Supprimer le défilement vertical */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    table-layout: fixed;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 3px; 
+    text-align: center;
+    word-wrap: break-word;
+    font-size: 11px; 
+    user-select: none; /* Empêcher la sélection de texte */
+}
+
+th {
+    background-color: #c2434f;
+    color: white;
+}
+
+td {
+    background-color: #fff;
+}
+
+td:hover {
+    background-color: #f1f1f1;
+}
+
+.invalid-day {
+    background-color: #e0e0e0; /* Couleur grisée pour les jours invalides */
+    pointer-events: none; /* Empêcher la sélection */
+}
+
+.coloring-container {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.coloring-container label {
+    margin-right: 10px;
+}
+
+/* Design réactif */
+@media (max-width: 1200px) {
+    th, td {
+        padding: 2px;
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 992px) {
+    th, td {
+        padding: 1px;
+        font-size: 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    th, td {
+        padding: 1px;
+        font-size: 7px;
+    }
+}
+
+@media (max-width: 576px) {
+    th, td {
+        padding: 1px;
+        font-size: 6px;
+    }
+}
