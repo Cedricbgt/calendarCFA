@@ -30,49 +30,28 @@ th, td {
 th {
     background-color: #c2434f;
     color: white;
+    border-right: 1px solid #ccc;
 }
 
 td {
     background-color: #fff;
     position: relative;
+    z-index: 10;
 }
 
-td.half-day::before {
-    content: '';
+td .comment-icon {
     position: absolute;
-    top: 0;
-    left: 50%;
-    width: 1px;
-    height: 100%;
-    background-color: #000;
-    opacity: 0.3;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    background-color: #ffcc00;
+    border-radius: 50%;
+    display: none;
 }
 
-td.half-day .left-half,
-td.half-day .right-half {
-    position: absolute;
-    top: 0;
-    width: 50%;
-    height: 100%;
-}
-
-td.half-day .left-half {
-    left: 0;
-    border-right: 1px solid #ccc;
-}
-
-td.half-day .right-half {
-    right: 0;
-}
-
-td.half-day .left-half:hover,
-td.half-day .right-half:hover {
-    background-color: #f1f1f1;
-    z-index: -2;
-}
-
-td:hover {
-    background-color: #f1f1f1;
+td.has-comment .comment-icon {
+    display: block;
 }
 
 .invalid-day, .empty-day {
