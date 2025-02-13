@@ -20,7 +20,7 @@ table {
 
 th, td {
     border: 1px solid #ccc;
-    padding: 3px; 
+    padding: 10px; 
     text-align: center;
     word-wrap: break-word;
     font-size: 11px; 
@@ -82,6 +82,13 @@ td.has-comment .comment-icon {
 }
 
 /* Design réactif */
+@media (max-width: 1600px) {
+    th, td {
+        padding: 3px;
+        font-size: 9px;
+    }
+}
+
 @media (max-width: 1200px) {
     th, td {
         padding: 2px;
