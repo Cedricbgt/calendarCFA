@@ -188,10 +188,22 @@ class Calendar {
         if (isWeekendOrHoliday) {
             cell.classList.add('holiday');
             cell.classList.add('invalid-day');
-        } else if (date >= this.startDate && date <= this.endDate) {
-            cell.classList.add('valid-day');
         } else {
-            cell.classList.add('invalid-day');
+            // Modification ici : utilisation de setHours(0, 0, 0, 0) pour comparer uniquement les dates
+            const compareDate = new Date(date.getTime());
+            compareDate.setHours(0, 0, 0, 0);
+            
+            const compareStartDate = new Date(this.startDate.getTime());
+            compareStartDate.setHours(0, 0, 0, 0);
+            
+            const compareEndDate = new Date(this.endDate.getTime());
+            compareEndDate.setHours(0, 0, 0, 0);
+            
+            if (compareDate >= compareStartDate && compareDate <= compareEndDate) {
+                cell.classList.add('valid-day');
+            } else {
+                cell.classList.add('invalid-day');
+            }
         }
     }
 
