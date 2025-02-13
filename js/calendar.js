@@ -35,6 +35,8 @@ class Calendar {
         this.enterprisePeriods = [];
         this.universityPeriods = [];
         
+        this.quickClickMode = true; // Mode clic rapide activé par défaut
+        
         this.init();
     }
 
@@ -278,11 +280,35 @@ class Calendar {
     setupEventListeners() {
         const enterpriseModeCheckbox = document.getElementById('enterprise-mode');
         const universityModeCheckbox = document.getElementById('university-mode');
+        const quickClickModeCheckbox = document.getElementById('quick-click-mode');
 
+        // Gestionnaire du mode clic rapide
+        quickClickModeCheckbox.addEventListener('change', (event) => {
+            this.quickClickMode = event.target.checked;
+        });
+
+        // Modifier le gestionnaire de mousedown
         this.calendarBody.addEventListener('mousedown', (event) => {
-            if (enterpriseModeCheckbox.checked || universityModeCheckbox.checked) {
-                this.handleModeClick(event, enterpriseModeCheckbox, universityModeCheckbox);
-            } else if (event.target.tagName === 'TD' && event.target.classList.contains('has-comment')) {
+            if (this.quickClickMode) {
+                // Mode clic rapide
+                if (event.button === 0) { // Clic gauche
+                    universityModeCheckbox.checked = true;
+                    enterpriseModeCheckbox.checked = false;
+                    this.handleQuickClick(event, 'orange');
+                } else if (event.button === 2) { // Clic droit
+                    enterpriseModeCheckbox.checked = true;
+                    universityModeCheckbox.checked = false;
+                    this.handleQuickClick(event, 'lightblue');
+                }
+            } else {
+                // Mode normal avec les checkboxes
+                if (enterpriseModeCheckbox.checked || universityModeCheckbox.checked) {
+                    this.handleModeClick(event, enterpriseModeCheckbox, universityModeCheckbox);
+                }
+            }
+
+            // Gestion des commentaires (toujours active)
+            if (event.target.tagName === 'TD' && event.target.classList.contains('has-comment')) {
                 const comment = event.target.getAttribute('data-comment');
                 if (comment) {
                     this.showCommentPopup(comment, event.clientX, event.clientY);
@@ -290,10 +316,26 @@ class Calendar {
             }
         });
 
+        // Empêcher le menu contextuel sur tout le document quand le mode clic rapide est actif
+        document.addEventListener('contextmenu', (event) => {
+            if (this.quickClickMode) {
+                event.preventDefault();
+            }
+        });
+
         this.calendarBody.addEventListener('mousemove', (event) => {
             if (this.isColoring && (enterpriseModeCheckbox.checked || universityModeCheckbox.checked)) {
+                // Arrêter la coloration si on passe sur une cellule invalide ou un jour férié
+                if (event.target.tagName === 'TD' && 
+                    (event.target.classList.contains('holiday') || 
+                    !event.target.classList.contains('valid-day'))) {
+                    this.isColoring = false;
+                    return;
+                }
+
                 if (event.target.tagName === 'TD' && event.target.classList.contains('valid-day')) {
                     if (event.target.classList.contains('has-comment')) {
+                        this.isColoring = false;
                         return;
                     }
                     event.target.style.backgroundColor = this.currentColor;
@@ -301,7 +343,8 @@ class Calendar {
             }
         });
 
-        this.calendarBody.addEventListener('mouseup', () => {
+        // Modifier le gestionnaire mouseup pour qu'il fonctionne sur tout le document
+        document.addEventListener('mouseup', () => {
             this.isColoring = false;
             this.isAddingComment = false;
         });
@@ -434,19 +477,48 @@ class Calendar {
                 const columnIndex = event.target.cellIndex;
                 const color = enterpriseModeCheckbox.checked ? 'lightblue' : 'orange';
                 
-                // Parcourir toutes les lignes du tableau
+                // Vérifier l'état de coloration du mois
                 const rows = this.calendarBody.getElementsByTagName('tr');
+                let validCells = 0;
+                let coloredCells = 0;
+                
                 for (let row of rows) {
                     const cell = this.halfDayParam ? 
                         [row.cells[columnIndex * 2], row.cells[columnIndex * 2 + 1]] : 
                         [row.cells[columnIndex]];
                         
                     cell.forEach(td => {
-                        if (td && td.classList.contains('valid-day') && !td.classList.contains('has-comment') && !td.classList.contains('holiday')) {
-                            td.style.backgroundColor = td.style.backgroundColor === color ? '' : color;
+                        if (td && td.classList.contains('valid-day') && 
+                            !td.classList.contains('has-comment') && 
+                            !td.classList.contains('holiday')) {
+                            validCells++;
+                            if (td.style.backgroundColor === color) {
+                                coloredCells++;
+                            }
                         }
                     });
                 }
+
+                // Décider de l'action à effectuer
+                const shouldClear = coloredCells === validCells;
+                
+                // Appliquer l'action sur toutes les cellules
+                for (let row of rows) {
+                    const cell = this.halfDayParam ? 
+                        [row.cells[columnIndex * 2], row.cells[columnIndex * 2 + 1]] : 
+                        [row.cells[columnIndex]];
+                        
+                    cell.forEach(td => {
+                        if (td && td.classList.contains('valid-day') && 
+                            !td.classList.contains('has-comment') && 
+                            !td.classList.contains('holiday')) {
+                            td.style.backgroundColor = shouldClear ? '' : color;
+                        }
+                    });
+                }
+
+                // Collecter les timestamps après la modification
+                this.collectTimestamps();
             }
         });
     }
@@ -578,6 +650,22 @@ class Calendar {
             if (cell.classList.contains('valid-day') && !cell.classList.contains('has-comment')) {
                 cell.style.backgroundColor = '';
             }
+        }
+    }
+
+    handleQuickClick(event, color) {
+        if (event.target.tagName === 'TD' && event.target.classList.contains('valid-day')) {
+            if (event.target.classList.contains('has-comment')) {
+                alert('Cette cellule contient un commentaire. Utilisez Shift+clic pour supprimer le commentaire avant de modifier la couleur.');
+                return;
+            }
+            
+            this.isColoring = true;
+            this.currentColor = event.target.style.backgroundColor === color ? '' : color;
+            event.target.style.backgroundColor = this.currentColor;
+            
+            // Collecter les timestamps après chaque modification
+            this.collectTimestamps();
         }
     }
 } 
