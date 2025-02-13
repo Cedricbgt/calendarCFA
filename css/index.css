@@ -54,9 +54,22 @@ td.has-comment .comment-icon {
     display: block;
 }
 
-.invalid-day, .empty-day {
-    background-color: #e0e0e0; /* Couleur grisée pour les jours invalides et les cases vides */
-    pointer-events: none; /* Empêcher la sélection */
+.holiday {
+    background-color: #E6E6FA !important; /* Couleur violette claire */
+    pointer-events: none; /* Empêche toute interaction */
+    color: #666; /* Texte un peu plus foncé pour la lisibilité */
+}
+
+/* Style pour les jours invalides (hors période) */
+.invalid-day:not(.holiday) {
+    background-color: #e0e0e0;
+    pointer-events: none;
+}
+
+/* Style pour les cases vides en fin de mois */
+.empty-day {
+    background-color: #e0e0e0;
+    pointer-events: none;
 }
 
 .coloring-container {
@@ -95,4 +108,25 @@ td.has-comment .comment-icon {
         padding: 1px;
         font-size: 6px;
     }
+}
+
+.comment-popup {
+    position: fixed;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+    max-width: 200px;
+    word-wrap: break-word;
+}
+
+.has-comment {
+    position: relative;
+    cursor: pointer;
+}
+
+.has-comment:hover {
+    background-color: #f0f0f0;
 }
