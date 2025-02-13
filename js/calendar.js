@@ -31,6 +31,10 @@ class Calendar {
         this.currentColor = '';
         this.isAddingComment = false;
         
+        // Ajouter les tableaux pour stocker les timestamps
+        this.enterprisePeriods = [];
+        this.universityPeriods = [];
+        
         this.init();
     }
 
@@ -292,6 +296,38 @@ class Calendar {
 
         this.setupModeCheckboxes(enterpriseModeCheckbox, universityModeCheckbox);
         this.setupHeaderClickListener(enterpriseModeCheckbox, universityModeCheckbox);
+
+        // Ajouter l'écouteur pour le bouton d'export
+        const exportBtn = document.getElementById('export-btn');
+        exportBtn.addEventListener('click', () => {
+            this.exportPeriods();
+        });
+
+        // Ajouter les écouteurs pour l'import
+        const importBtn = document.getElementById('import-btn');
+        const importFile = document.getElementById('import-file');
+        
+        importBtn.addEventListener('click', () => {
+            importFile.click();
+        });
+        
+        importFile.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                this.importPeriods(file);
+            }
+        });
+
+        // Ajouter l'écouteur pour le bouton de réinitialisation
+        const resetBtn = document.getElementById('reset-btn');
+        resetBtn.addEventListener('click', () => {
+            if (confirm('Voulez-vous vraiment réinitialiser le calendrier ?')) {
+                this.clearAllColors();
+                // Décocher les cases à cocher
+                document.getElementById('enterprise-mode').checked = false;
+                document.getElementById('university-mode').checked = false;
+            }
+        });
     }
 
     /**
@@ -354,6 +390,9 @@ class Calendar {
                 this.currentColor = event.target.style.backgroundColor === 'orange' ? '' : 'orange';
                 event.target.style.backgroundColor = this.currentColor;
             }
+
+            // Collecter les timestamps après chaque modification
+            this.collectTimestamps();
         }
     }
 
@@ -398,5 +437,135 @@ class Calendar {
                 }
             }
         });
+    }
+
+    /**
+     * Collecte les timestamps des périodes sélectionnées
+     */
+    collectTimestamps() {
+        const periods = {
+            enterprise: [],
+            university: []
+        };
+
+        const rows = this.calendarBody.getElementsByTagName('tr');
+        for (let row of rows) {
+            for (let cell of row.cells) {
+                if (cell.classList.contains('valid-day') && !cell.classList.contains('holiday')) {
+                    const date = this.getCellDate(cell);
+                    if (date) {
+                        if (cell.style.backgroundColor === 'lightblue') {
+                            periods.enterprise.push(date.getTime());
+                        } else if (cell.style.backgroundColor === 'orange') {
+                            periods.university.push(date.getTime());
+                        }
+                    }
+                }
+            }
+        }
+
+        console.log('Périodes entreprise:', periods.enterprise);
+        console.log('Périodes université:', periods.university);
+        return periods;
+    }
+
+    /**
+     * Obtient la date d'une cellule
+     */
+    getCellDate(cell) {
+        const rowIndex = cell.parentElement.rowIndex - 1; // -1 pour l'en-tête
+        const day = rowIndex + 1;
+        let columnIndex = this.halfDayParam ? Math.floor(cell.cellIndex / 2) : cell.cellIndex;
+        
+        let currentYear = this.startYear;
+        let currentMonth = this.startMonth;
+        
+        for (let i = 0; i < columnIndex; i++) {
+            currentMonth++;
+            if (currentMonth === 12) {
+                currentMonth = 0;
+                currentYear++;
+            }
+        }
+
+        return new Date(currentYear, currentMonth, day);
+    }
+
+    /**
+     * Exporte les périodes au format JSON
+     */
+    exportPeriods() {
+        const periods = this.collectTimestamps();
+        const jsonContent = JSON.stringify(periods, null, 2);
+        
+        // Créer un blob et un lien de téléchargement
+        const blob = new Blob([jsonContent], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'periodes.json';
+        
+        // Déclencher le téléchargement
+        document.body.appendChild(link);
+        link.click();
+        
+        // Nettoyer
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    /**
+     * Importe les périodes depuis un fichier JSON
+     */
+    importPeriods(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const periods = JSON.parse(e.target.result);
+                this.applyPeriods(periods);
+            } catch (error) {
+                console.error('Erreur lors de la lecture du fichier JSON:', error);
+                alert('Le fichier JSON est invalide');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    /**
+     * Applique les périodes importées au calendrier
+     */
+    applyPeriods(periods) {
+        // D'abord, effacer toutes les couleurs existantes
+        this.clearAllColors();
+
+        // Appliquer les couleurs pour chaque période
+        const rows = this.calendarBody.getElementsByTagName('tr');
+        for (let row of rows) {
+            for (let cell of row.cells) {
+                if (cell.classList.contains('valid-day') && !cell.classList.contains('holiday')) {
+                    const date = this.getCellDate(cell);
+                    if (date) {
+                        const timestamp = date.getTime();
+                        if (periods.enterprise.includes(timestamp)) {
+                            cell.style.backgroundColor = 'lightblue';
+                        } else if (periods.university.includes(timestamp)) {
+                            cell.style.backgroundColor = 'orange';
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Efface toutes les couleurs du calendrier
+     */
+    clearAllColors() {
+        const cells = this.calendarBody.getElementsByTagName('td');
+        for (let cell of cells) {
+            if (cell.classList.contains('valid-day') && !cell.classList.contains('has-comment')) {
+                cell.style.backgroundColor = '';
+            }
+        }
     }
 } 

@@ -165,3 +165,25 @@ td {
         font-size: 6px;
     }
 }
+
+#import-btn, #export-btn, #reset-btn {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #c2434f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#import-btn:hover, #export-btn:hover, #reset-btn:hover {
+    background-color: #a33744;
+}
+
+#reset-btn {
+    background-color: #666;
+}
+
+#reset-btn:hover {
+    background-color: #555;
+}
