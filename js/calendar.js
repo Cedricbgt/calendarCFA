@@ -1,20 +1,31 @@
+/**
+ * Classe Calendar pour gérer l'affichage et l'interaction avec un calendrier
+ */
 class Calendar {
+    /**
+     * Constructeur de la classe Calendar
+     */
     constructor(options) {
+        // Dates de début et fin du calendrier
         this.startDate = options.startDate;
         this.endDate = options.endDate;
         this.halfDayParam = options.halfDayParam;
+        // Éléments DOM pour l'en-tête et le corps du calendrier
         this.calendarHeader = options.calendarHeader;
         this.calendarBody = options.calendarBody;
         
+        // Configuration du calendrier
         this.daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
         this.monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
         this.dayNames = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
         
+        // Calcul des mois et années de début/fin
         this.startMonth = this.startDate.getMonth();
         this.startYear = this.startDate.getFullYear();
         this.endMonth = this.endDate.getMonth();
         this.endYear = this.endDate.getFullYear();
         
+        // État du calendrier
         this.joursFeries = {};
         this.isColoring = false;
         this.currentColor = '';
@@ -23,6 +34,9 @@ class Calendar {
         this.init();
     }
 
+    /**
+     * Initialise le calendrier
+     */
     async init() {
         await this.loadJoursFeries();
         this.createHeader();
@@ -30,6 +44,9 @@ class Calendar {
         this.setupEventListeners();
     }
 
+    /**
+     * Charge les jours fériés depuis une API
+     */
     async loadJoursFeries() {
         try {
             const response = await fetch('https://etalab.github.io/jours-feries-france-data/json/metropole.json');
@@ -39,6 +56,9 @@ class Calendar {
         }
     }
 
+    /**
+     * Crée l'en-tête du calendrier avec les mois
+     */
     createHeader() {
         const headerRow = document.createElement('tr');
         let currentYear = this.startYear;
@@ -59,6 +79,9 @@ class Calendar {
         this.calendarHeader.appendChild(headerRow);
     }
 
+    /**
+     * Génère le corps du calendrier
+     */
     generateCalendar() {
         for (let day = 1; day <= 31; day++) {
             const row = document.createElement('tr');
@@ -90,11 +113,61 @@ class Calendar {
         }
     }
 
+    /**
+     * Calcule le numéro de la semaine pour une date donnée
+     */
+    getWeekNumber(date) {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    /**
+     * Crée une cellule pour une journée complète avec le numéro de semaine
+     */
+    createFullDayCell(row, dayOfWeek, day, date, isWeekendOrHoliday) {
+        const cell = document.createElement('td');
+        cell.textContent = `${dayOfWeek} ${day}`;
+        this.addCellClasses(cell, date, isWeekendOrHoliday);
+
+        // Ajouter le numéro de semaine si c'est un lundi
+        if (date.getDay() === 1) { // 1 = Lundi
+            const weekNumber = this.getWeekNumber(date);
+            const weekLabel = document.createElement('div');
+            weekLabel.classList.add('week-number');
+            weekLabel.textContent = `S${weekNumber}`;
+            cell.appendChild(weekLabel);
+        }
+
+        if (!isWeekendOrHoliday) {
+            const commentIcon = document.createElement('div');
+            commentIcon.classList.add('comment-icon');
+            cell.appendChild(commentIcon);
+        }
+
+        row.appendChild(cell);
+    }
+
+    /**
+     * Crée une cellule pour une demi-journée avec le numéro de semaine
+     */
     createHalfDayCell(row, dayOfWeek, day, date, isWeekendOrHoliday) {
         const cellMorning = document.createElement('td');
         cellMorning.textContent = `${dayOfWeek}`;
         cellMorning.classList.add('half-day', 'morning');
         this.addCellClasses(cellMorning, date, isWeekendOrHoliday);
+
+        // Ajouter le numéro de semaine si c'est un lundi
+        if (date.getDay() === 1) { // 1 = Lundi
+            const weekNumber = this.getWeekNumber(date);
+            const weekLabel = document.createElement('div');
+            weekLabel.classList.add('week-number');
+            weekLabel.textContent = `S${weekNumber}`;
+            cellMorning.appendChild(weekLabel);
+        }
+
         row.appendChild(cellMorning);
 
         const cellAfternoon = document.createElement('td');
@@ -104,19 +177,9 @@ class Calendar {
         row.appendChild(cellAfternoon);
     }
 
-    createFullDayCell(row, dayOfWeek, day, date, isWeekendOrHoliday) {
-        const cell = document.createElement('td');
-        cell.textContent = `${dayOfWeek} ${day}`;
-        this.addCellClasses(cell, date, isWeekendOrHoliday);
-        row.appendChild(cell);
-
-        if (!isWeekendOrHoliday) {
-            const commentIcon = document.createElement('div');
-            commentIcon.classList.add('comment-icon');
-            cell.appendChild(commentIcon);
-        }
-    }
-
+    /**
+     * Ajoute les classes CSS appropriées à une cellule
+     */
     addCellClasses(cell, date, isWeekendOrHoliday) {
         if (isWeekendOrHoliday) {
             cell.classList.add('holiday');
@@ -128,6 +191,9 @@ class Calendar {
         }
     }
 
+    /**
+     * Crée une cellule vide
+     */
     createEmptyCell(row) {
         if (this.halfDayParam) {
             const cellMorning = document.createElement('td');
@@ -144,6 +210,9 @@ class Calendar {
         }
     }
 
+    /**
+     * Vérifie si une date est un jour férié
+     */
     isJourFerie(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -152,10 +221,16 @@ class Calendar {
         return dateString in this.joursFeries;
     }
 
+    /**
+     * Vérifie si une date est un dimanche
+     */
     isDimanche(date) {
         return date.getDay() === 0;
     }
 
+    /**
+     * Affiche une popup de commentaire
+     */
     showCommentPopup(comment, x, y) {
         const existingPopup = document.querySelector('.comment-popup');
         if (existingPopup) {
@@ -181,6 +256,9 @@ class Calendar {
         }, 0);
     }
 
+    /**
+     * Configure les écouteurs d'événements
+     */
     setupEventListeners() {
         const enterpriseModeCheckbox = document.getElementById('enterprise-mode');
         const universityModeCheckbox = document.getElementById('university-mode');
@@ -216,6 +294,9 @@ class Calendar {
         this.setupHeaderClickListener(enterpriseModeCheckbox, universityModeCheckbox);
     }
 
+    /**
+     * Gère le clic selon le mode sélectionné
+     */
     handleModeClick(event, enterpriseModeCheckbox, universityModeCheckbox) {
         if (universityModeCheckbox.checked && event.shiftKey) {
             this.handleCommentMode(event);
@@ -224,6 +305,9 @@ class Calendar {
         }
     }
 
+    /**
+     * Gère le mode commentaire
+     */
     handleCommentMode(event) {
         this.isAddingComment = true;
         if (event.target.tagName === 'TD' && event.target.classList.contains('valid-day')) {
@@ -243,7 +327,6 @@ class Calendar {
                     event.target.setAttribute('data-comment', comment);
                     event.target.style.backgroundColor = 'orange';
                     
-                    // Ajout de l'icône de commentaire
                     const commentIcon = document.createElement('div');
                     commentIcon.classList.add('comment-icon');
                     event.target.appendChild(commentIcon);
@@ -252,6 +335,9 @@ class Calendar {
         }
     }
 
+    /**
+     * Gère le mode coloration
+     */
     handleColorMode(event, enterpriseModeCheckbox, universityModeCheckbox) {
         if (event.target.tagName === 'TD' && event.target.classList.contains('valid-day')) {
             if (event.target.classList.contains('has-comment')) {
@@ -271,6 +357,9 @@ class Calendar {
         }
     }
 
+    /**
+     * Configure les cases à cocher de mode
+     */
     setupModeCheckboxes(enterpriseModeCheckbox, universityModeCheckbox) {
         enterpriseModeCheckbox.addEventListener('change', () => {
             if (enterpriseModeCheckbox.checked) {
@@ -285,6 +374,9 @@ class Calendar {
         });
     }
 
+    /**
+     * Configure l'écouteur de clic sur l'en-tête
+     */
     setupHeaderClickListener(enterpriseModeCheckbox, universityModeCheckbox) {
         this.calendarHeader.addEventListener('click', (event) => {
             if (event.target.tagName === 'TH' && (enterpriseModeCheckbox.checked || universityModeCheckbox.checked)) {

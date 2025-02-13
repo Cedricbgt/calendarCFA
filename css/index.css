@@ -137,3 +137,31 @@ td.has-comment .comment-icon {
 .has-comment:hover {
     background-color: #f0f0f0;
 }
+
+.week-number {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 8px;
+    color: #666;
+    background-color: #f0f0f0;
+    padding: 1px 3px;
+    border-radius: 2px;
+}
+
+td {
+    position: relative; /* Pour le positionnement absolu du numéro de semaine */
+}
+
+/* Ajuster la taille en fonction de la largeur de l'écran */
+@media (max-width: 1200px) {
+    .week-number {
+        font-size: 7px;
+    }
+}
+
+@media (max-width: 992px) {
+    .week-number {
+        font-size: 6px;
+    }
+}
