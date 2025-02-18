@@ -37,6 +37,8 @@ class Calendar {
         
         this.quickClickMode = true; // Mode clic rapide activé par défaut
         
+        this.universityTime = 0;
+        this.saturdayMode = false;
         this.init();
     }
 
@@ -48,6 +50,7 @@ class Calendar {
         this.createHeader();
         this.generateCalendar();
         this.setupEventListeners();
+        this.calculateUniversityTime();
     }
 
     /**
@@ -191,7 +194,6 @@ class Calendar {
             cell.classList.add('holiday');
             cell.classList.add('invalid-day');
         } else {
-            // Modification ici : utilisation de setHours(0, 0, 0, 0) pour comparer uniquement les dates
             const compareDate = new Date(date.getTime());
             compareDate.setHours(0, 0, 0, 0);
             
@@ -203,6 +205,14 @@ class Calendar {
             
             if (compareDate >= compareStartDate && compareDate <= compareEndDate) {
                 cell.classList.add('valid-day');
+                
+                // Ajouter une classe spéciale pour le premier et dernier jour
+                if (compareDate.getTime() === compareStartDate.getTime() || 
+                    compareDate.getTime() === compareEndDate.getTime()) {
+                    cell.classList.add('fixed-university');
+                    cell.style.backgroundColor = '#87CEEB';
+                    cell.style.cursor = 'not-allowed';
+                }
             } else {
                 cell.classList.add('invalid-day');
             }
@@ -243,7 +253,7 @@ class Calendar {
      * Vérifie si une date est un dimanche
      */
     isDimanche(date) {
-        return date.getDay() === 0;
+        return date.getDay() === 0 || (!this.saturdayMode && date.getDay() === 6);
     }
 
     /**
@@ -290,15 +300,14 @@ class Calendar {
         // Modifier le gestionnaire de mousedown
         this.calendarBody.addEventListener('mousedown', (event) => {
             if (this.quickClickMode) {
-                // Mode clic rapide
                 if (event.button === 0) { // Clic gauche
                     universityModeCheckbox.checked = true;
                     enterpriseModeCheckbox.checked = false;
-                    this.handleQuickClick(event, 'orange');
+                    this.handleQuickClick(event, '#87CEEB'); // Bleu ciel
                 } else if (event.button === 2) { // Clic droit
                     enterpriseModeCheckbox.checked = true;
                     universityModeCheckbox.checked = false;
-                    this.handleQuickClick(event, 'lightblue');
+                    this.handleQuickClick(event, '#90EE90'); // Vert clair
                 }
             } else {
                 // Mode normal avec les checkboxes
@@ -333,12 +342,15 @@ class Calendar {
                     return;
                 }
 
-                if (event.target.tagName === 'TD' && event.target.classList.contains('valid-day')) {
+                if (event.target.tagName === 'TD' && 
+                    event.target.classList.contains('valid-day') && 
+                    !event.target.classList.contains('fixed-university')) {
                     if (event.target.classList.contains('has-comment')) {
                         this.isColoring = false;
                         return;
                     }
                     event.target.style.backgroundColor = this.currentColor;
+                    this.calculateUniversityTime();
                 }
             }
         });
@@ -382,6 +394,13 @@ class Calendar {
                 document.getElementById('enterprise-mode').checked = false;
                 document.getElementById('university-mode').checked = false;
             }
+        });
+
+        // Ajouter l'écouteur pour le mode samedi
+        const saturdayModeCheckbox = document.getElementById('saturday-mode');
+        saturdayModeCheckbox.addEventListener('change', (event) => {
+            this.saturdayMode = event.target.checked;
+            this.updateSaturdayStatus();
         });
     }
 
@@ -430,7 +449,10 @@ class Calendar {
      * Gère le mode coloration
      */
     handleColorMode(event, enterpriseModeCheckbox, universityModeCheckbox) {
-        if (event.target.tagName === 'TD' && event.target.classList.contains('valid-day')) {
+        if (event.target.tagName === 'TD' && 
+            event.target.classList.contains('valid-day') && 
+            !event.target.classList.contains('fixed-university')) {
+            
             if (event.target.classList.contains('has-comment')) {
                 alert('Cette cellule contient un commentaire. Utilisez Shift+clic pour supprimer le commentaire avant de modifier la couleur.');
                 this.isColoring = false;
@@ -439,14 +461,15 @@ class Calendar {
             
             this.isColoring = true;
             if (enterpriseModeCheckbox.checked) {
-                this.currentColor = event.target.style.backgroundColor === 'lightblue' ? '' : 'lightblue';
+                this.currentColor = event.target.style.backgroundColor === '#90EE90' ? '' : '#90EE90';
                 event.target.style.backgroundColor = this.currentColor;
+                this.calculateUniversityTime();
             } else if (universityModeCheckbox.checked) {
-                this.currentColor = event.target.style.backgroundColor === 'orange' ? '' : 'orange';
+                this.currentColor = event.target.style.backgroundColor === '#87CEEB' ? '' : '#87CEEB';
                 event.target.style.backgroundColor = this.currentColor;
+                this.calculateUniversityTime();
             }
 
-            // Collecter les timestamps après chaque modification
             this.collectTimestamps();
         }
     }
@@ -475,7 +498,7 @@ class Calendar {
         this.calendarHeader.addEventListener('click', (event) => {
             if (event.target.tagName === 'TH' && (enterpriseModeCheckbox.checked || universityModeCheckbox.checked)) {
                 const columnIndex = event.target.cellIndex;
-                const color = enterpriseModeCheckbox.checked ? 'lightblue' : 'orange';
+                const color = enterpriseModeCheckbox.checked ? '#90EE90' : '#87CEEB'; // Vert clair ou Bleu ciel
                 
                 // Vérifier l'état de coloration du mois
                 const rows = this.calendarBody.getElementsByTagName('tr');
@@ -490,7 +513,8 @@ class Calendar {
                     cell.forEach(td => {
                         if (td && td.classList.contains('valid-day') && 
                             !td.classList.contains('has-comment') && 
-                            !td.classList.contains('holiday')) {
+                            !td.classList.contains('holiday') &&
+                            !td.classList.contains('fixed-university')) {
                             validCells++;
                             if (td.style.backgroundColor === color) {
                                 coloredCells++;
@@ -511,13 +535,15 @@ class Calendar {
                     cell.forEach(td => {
                         if (td && td.classList.contains('valid-day') && 
                             !td.classList.contains('has-comment') && 
-                            !td.classList.contains('holiday')) {
+                            !td.classList.contains('holiday') &&
+                            !td.classList.contains('fixed-university')) {
                             td.style.backgroundColor = shouldClear ? '' : color;
                         }
                     });
                 }
 
-                // Collecter les timestamps après la modification
+                // Recalculer le temps total
+                this.calculateUniversityTime();
                 this.collectTimestamps();
             }
         });
@@ -651,21 +677,92 @@ class Calendar {
                 cell.style.backgroundColor = '';
             }
         }
+        this.calculateUniversityTime();
     }
 
     handleQuickClick(event, color) {
-        if (event.target.tagName === 'TD' && event.target.classList.contains('valid-day')) {
+        if (event.target.tagName === 'TD' && 
+            event.target.classList.contains('valid-day') && 
+            !event.target.classList.contains('fixed-university')) {
+            
             if (event.target.classList.contains('has-comment')) {
                 alert('Cette cellule contient un commentaire. Utilisez Shift+clic pour supprimer le commentaire avant de modifier la couleur.');
                 return;
             }
             
             this.isColoring = true;
-            this.currentColor = event.target.style.backgroundColor === color ? '' : color;
+            const wasColored = event.target.style.backgroundColor === color;
+            this.currentColor = wasColored ? '' : color;
             event.target.style.backgroundColor = this.currentColor;
             
-            // Collecter les timestamps après chaque modification
+            // Recalculer le temps pour tout changement de couleur
+            this.calculateUniversityTime();
+            
             this.collectTimestamps();
         }
+    }
+
+    updateTimeCounter() {
+        const timeElement = document.getElementById('university-time');
+        timeElement.textContent = this.universityTime.toFixed(1);
+    }
+
+    /**
+     * Calcule le temps total université
+     */
+    calculateUniversityTime() {
+        let total = 0;
+        const cells = this.calendarBody.getElementsByTagName('td');
+        
+        for (let cell of cells) {
+            if ((cell.classList.contains('valid-day') || cell.classList.contains('fixed-university')) && 
+                (cell.style.backgroundColor === '#87ceeb' || cell.style.backgroundColor === 'rgb(135, 206, 235)')) {
+                total += this.halfDayParam ? 3.5 : 7;
+            }
+        }
+        
+        this.universityTime = total;
+        this.updateTimeCounter();
+    }
+
+    /**
+     * Met à jour le statut des samedis
+     */
+    updateSaturdayStatus() {
+        const cells = this.calendarBody.getElementsByTagName('td');
+        for (let cell of cells) {
+            const date = this.getCellDate(cell);
+            if (date && date.getDay() === 6) { // 6 = Samedi
+                if (this.saturdayMode) {
+                    cell.classList.remove('holiday');
+                    cell.classList.remove('invalid-day');
+                    if (this.isDateInRange(date)) {
+                        cell.classList.add('valid-day');
+                    }
+                } else {
+                    cell.classList.add('holiday');
+                    cell.classList.add('invalid-day');
+                    cell.classList.remove('valid-day');
+                    cell.style.backgroundColor = ''; // Effacer la couleur si elle existe
+                }
+            }
+        }
+        this.calculateUniversityTime(); // Recalculer le temps total
+    }
+
+    /**
+     * Vérifie si une date est dans la plage sélectionnée
+     */
+    isDateInRange(date) {
+        const compareDate = new Date(date.getTime());
+        compareDate.setHours(0, 0, 0, 0);
+        
+        const compareStartDate = new Date(this.startDate.getTime());
+        compareStartDate.setHours(0, 0, 0, 0);
+        
+        const compareEndDate = new Date(this.endDate.getTime());
+        compareEndDate.setHours(0, 0, 0, 0);
+        
+        return compareDate >= compareStartDate && compareDate <= compareEndDate;
     }
 } 

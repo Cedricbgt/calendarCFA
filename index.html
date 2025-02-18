@@ -13,9 +13,12 @@
                 <!-- En-têtes de mois générés dynamiquement -->
             </thead>
             <tbody id="calendar-body">
-                <!-- Jours générés d -->
+                <!-- Jours générés dynamiquement -->
             </tbody>
         </table>
+        <div id="time-counter" class="time-counter">
+            Temps université : <span id="university-time">0</span> heures
+        </div>
     </div>
     <div class="coloring-container">
         <label for="enterprise-mode">Entreprise:</label>
@@ -28,6 +31,9 @@
         <input type="file" id="import-file" accept=".json" style="display: none;">
         <label for="quick-click-mode">Mode clic rapide:</label>
         <input type="checkbox" id="quick-click-mode" checked>
+        <br>
+        <label for="saturday-mode">Samedi travaillé:</label>
+        <input type="checkbox" id="saturday-mode">
     </div>
     <script src="js/calendar.js"></script>
     <script src="js/index.js"></script>

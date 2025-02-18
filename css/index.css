@@ -54,10 +54,11 @@ td.has-comment .comment-icon {
     display: block;
 }
 
+/* Garder les nouvelles couleurs */
 .holiday {
-    background-color: #E6E6FA !important; /* Couleur violette claire */
-    pointer-events: none; /* Empêche toute interaction */
-    color: #666; /* Texte un peu plus foncé pour la lisibilité */
+    background-color: #9370DB !important; /* Violet plus prononcé */
+    pointer-events: none;
+    color: #fff; /* Texte en blanc pour meilleure lisibilité */
 }
 
 /* Style pour les jours invalides (hors période) */
@@ -186,4 +187,17 @@ td {
 
 #reset-btn:hover {
     background-color: #555;
+}
+
+/* Modifier la couleur des jours fixes université (premier et dernier jour) */
+.fixed-university {
+    background-color: #87CEEB !important; /* Bleu ciel */
+    cursor: not-allowed;
+}
+
+.time-counter {
+    text-align: right;
+    margin: 10px 20px;
+    font-weight: bold;
+    color: #333;
 }
