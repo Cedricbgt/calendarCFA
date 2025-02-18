@@ -16,24 +16,45 @@
                 
             </tbody>
         </table>
-        <div id="time-counter" class="time-counter">
-            Temps université : <span id="university-time">0</span> heures
-        </div>
     </div>
     <div class="coloring-container">
-        <label for="enterprise-mode">Entreprise:</label>
-        <input type="checkbox" id="enterprise-mode">
-        <label for="university-mode">Université:</label>
-        <input type="checkbox" id="university-mode">
-        <button id="export-btn">Exporter</button>
-        <button id="import-btn">Importer</button>
-        <button id="reset-btn">Réinitialiser</button>
-        <input type="file" id="import-file" accept=".json" style="display: none;">
-        <label for="quick-click-mode">Mode clic rapide:</label>
-        <input type="checkbox" id="quick-click-mode" checked>
-        <br>
-        <label for="saturday-mode">Samedi travaillé:</label>
-        <input type="checkbox" id="saturday-mode">
+        <div class="main-controls">
+            <div class="mode-group">
+                <label for="enterprise-mode">Entreprise:</label>
+                <input type="checkbox" id="enterprise-mode">
+                <label for="university-mode">Université:</label>
+                <input type="checkbox" id="university-mode">
+            </div>
+            <div class="university-type-selector" style="display: none;">
+                <label for="university-type">Type:</label>
+                <select id="university-type">
+                    <option value="face-to-face">Face à face pédagogique</option>
+                    <option value="evaluation">Évaluations</option>
+                    <option value="foad">FOAD</option>
+                    <option value="mobility">Mobilité pédagogique</option>
+                    <option value="project">Projets et recherche</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="options-controls">
+            <label for="quick-click-mode">Mode clic rapide</label>
+            <input type="checkbox" id="quick-click-mode" checked>
+            <label for="saturday-mode">Samedi travaillé</label>
+            <input type="checkbox" id="saturday-mode">
+        </div>
+
+        <div class="action-controls">
+            <div class="buttons-group">
+                <button id="export-btn">Exporter</button>
+                <button id="import-btn">Importer</button>
+                <button id="reset-btn">Réinitialiser</button>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
+            </div>
+            <div id="time-counter" class="time-counter">
+                Temps université : <span id="university-time">0</span> heures
+            </div>
+        </div>
     </div>
     <script src="js/calendar.js"></script>
     <script src="js/index.js"></script>

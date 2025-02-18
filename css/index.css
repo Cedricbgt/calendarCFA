@@ -75,11 +75,118 @@ td.has-comment .comment-icon {
 
 .coloring-container {
     margin-top: 10px;
-    text-align: center;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-radius: 4px;
 }
 
-.coloring-container label {
-    margin-right: 10px;
+.main-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.mode-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.university-type-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.university-type-selector select {
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.enterprise-controls, .university-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.university-types {
+    display: flex;
+    gap: 15px;
+}
+
+.university-types div {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.options-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.action-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.buttons-group {
+    display: flex;
+    gap: 10px;
+}
+
+/* Styles des boutons radio */
+input[type="radio"] {
+    margin-right: 5px;
+}
+
+/* Couleurs pour les différents types d'université */
+.color-face-to-face { background-color: #87CEEB !important; }  /* Bleu ciel */
+.color-evaluation { background-color: #4682B4 !important; }    /* Bleu acier */
+.color-foad { background-color: #6495ED !important; }         /* Bleu cornflower */
+.color-mobility { background-color: #1E90FF !important; }     /* Bleu dodger */
+.color-project { background-color: #B0C4DE !important; }      /* Bleu acier clair */
+
+#import-btn, #export-btn, #reset-btn {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #c2434f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#import-btn:hover, #export-btn:hover, #reset-btn:hover {
+    background-color: #a33744;
+}
+
+#reset-btn {
+    background-color: #666;
+}
+
+#reset-btn:hover {
+    background-color: #555;
+}
+
+.time-counter {
+    text-align: right;
+    margin: 10px 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Style pour les checkboxes */
+input[type="checkbox"] {
+    margin-right: 15px;
+    cursor: pointer;
 }
 
 /* Design réactif */
@@ -167,37 +274,8 @@ td {
     }
 }
 
-#import-btn, #export-btn, #reset-btn {
-    margin-left: 10px;
-    padding: 5px 10px;
-    background-color: #c2434f;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-#import-btn:hover, #export-btn:hover, #reset-btn:hover {
-    background-color: #a33744;
-}
-
-#reset-btn {
-    background-color: #666;
-}
-
-#reset-btn:hover {
-    background-color: #555;
-}
-
 /* Modifier la couleur des jours fixes université (premier et dernier jour) */
 .fixed-university {
     background-color: #87CEEB !important; /* Bleu ciel */
     cursor: not-allowed;
-}
-
-.time-counter {
-    text-align: right;
-    margin: 10px 20px;
-    font-weight: bold;
-    color: #333;
 }

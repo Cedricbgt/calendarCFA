@@ -39,6 +39,16 @@ class Calendar {
         
         this.universityTime = 0;
         this.saturdayMode = false;
+
+        // Ajouter un mapping des types vers les couleurs
+        this.universityColors = {
+            'face-to-face': '#87CEEB',  // Bleu ciel
+            'evaluation': '#4682B4',    // Bleu acier
+            'foad': '#6495ED',         // Bleu cornflower
+            'mobility': '#1E90FF',     // Bleu dodger
+            'project': '#B0C4DE'       // Bleu acier clair
+        };
+
         this.init();
     }
 
@@ -291,6 +301,7 @@ class Calendar {
         const enterpriseModeCheckbox = document.getElementById('enterprise-mode');
         const universityModeCheckbox = document.getElementById('university-mode');
         const quickClickModeCheckbox = document.getElementById('quick-click-mode');
+        const universityTypeSelector = document.querySelector('.university-type-selector');
 
         // Gestionnaire du mode clic rapide
         quickClickModeCheckbox.addEventListener('change', (event) => {
@@ -402,6 +413,13 @@ class Calendar {
             this.saturdayMode = event.target.checked;
             this.updateSaturdayStatus();
         });
+
+        universityModeCheckbox.addEventListener('change', (event) => {
+            universityTypeSelector.style.display = event.target.checked ? 'flex' : 'none';
+            if (event.target.checked) {
+                enterpriseModeCheckbox.checked = false;
+            }
+        });
     }
 
     /**
@@ -465,7 +483,9 @@ class Calendar {
                 event.target.style.backgroundColor = this.currentColor;
                 this.calculateUniversityTime();
             } else if (universityModeCheckbox.checked) {
-                this.currentColor = event.target.style.backgroundColor === '#87CEEB' ? '' : '#87CEEB';
+                const typeSelect = document.getElementById('university-type');
+                const selectedColor = this.universityColors[typeSelect.value];
+                this.currentColor = event.target.style.backgroundColor === selectedColor ? '' : selectedColor;
                 event.target.style.backgroundColor = this.currentColor;
                 this.calculateUniversityTime();
             }
@@ -498,7 +518,14 @@ class Calendar {
         this.calendarHeader.addEventListener('click', (event) => {
             if (event.target.tagName === 'TH' && (enterpriseModeCheckbox.checked || universityModeCheckbox.checked)) {
                 const columnIndex = event.target.cellIndex;
-                const color = enterpriseModeCheckbox.checked ? '#90EE90' : '#87CEEB'; // Vert clair ou Bleu ciel
+                let color;
+                
+                if (enterpriseModeCheckbox.checked) {
+                    color = '#90EE90';
+                } else {
+                    const typeSelect = document.getElementById('university-type');
+                    color = this.universityColors[typeSelect.value];
+                }
                 
                 // Vérifier l'état de coloration du mois
                 const rows = this.calendarBody.getElementsByTagName('tr');
@@ -715,14 +742,47 @@ class Calendar {
         const cells = this.calendarBody.getElementsByTagName('td');
         
         for (let cell of cells) {
-            if ((cell.classList.contains('valid-day') || cell.classList.contains('fixed-university')) && 
-                (cell.style.backgroundColor === '#87ceeb' || cell.style.backgroundColor === 'rgb(135, 206, 235)')) {
-                total += this.halfDayParam ? 3.5 : 7;
+            if ((cell.classList.contains('valid-day') || cell.classList.contains('fixed-university'))) {
+                const bgColor = cell.style.backgroundColor;
+                if (!bgColor) continue;
+
+                // Convertir la couleur en format HEX pour la comparaison
+                const hexColor = this.rgbToHex(bgColor).toLowerCase();
+                
+                // Convertir les couleurs de référence en minuscules pour la comparaison
+                const colors = {
+                    faceToFace: this.universityColors['face-to-face'].toLowerCase(),
+                    evaluation: this.universityColors['evaluation'].toLowerCase(),
+                    foad: this.universityColors['foad'].toLowerCase(),
+                    mobility: this.universityColors['mobility'].toLowerCase()
+                };
+
+                // Vérifier si la couleur correspond à un type d'université qui doit être compté
+                if ([colors.faceToFace, colors.evaluation, colors.foad, colors.mobility].includes(hexColor)) {
+                    total += this.halfDayParam ? 3.5 : 7;
+                }
             }
         }
         
         this.universityTime = total;
         this.updateTimeCounter();
+    }
+
+    // Améliorer la fonction rgbToHex
+    rgbToHex(color) {
+        // Si c'est déjà un hex
+        if (color.startsWith('#')) return color;
+        
+        // Si c'est un rgb()
+        const matches = color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+        if (matches) {
+            const r = parseInt(matches[1]);
+            const g = parseInt(matches[2]);
+            const b = parseInt(matches[3]);
+            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        }
+        
+        return '';
     }
 
     /**
