@@ -229,21 +229,29 @@ input[type="checkbox"] {
     position: fixed;
     background-color: white;
     border: 1px solid #ccc;
-    padding: 10px;
+    padding: 8px 12px;
     border-radius: 4px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     z-index: 1000;
     max-width: 200px;
     word-wrap: break-word;
+    font-size: 12px;
+    pointer-events: none; /* Empêche la popup d'interférer avec les événements de la souris */
 }
 
 .has-comment {
     position: relative;
-    cursor: pointer;
 }
 
-.has-comment:hover {
-    background-color: #f0f0f0;
+.has-comment .comment-icon {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background-color: #ffcc00;
+    border-radius: 50%;
+    display: block;
 }
 
 .week-number {
@@ -276,6 +284,6 @@ td {
 
 /* Modifier la couleur des jours fixes université (premier et dernier jour) */
 .fixed-university {
-    background-color: #87CEEB !important; /* Bleu ciel */
+    background-color: #FFD700 !important; /* Jaune */
     cursor: not-allowed;
 }
